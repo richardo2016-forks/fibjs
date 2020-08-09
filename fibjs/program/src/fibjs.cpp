@@ -61,21 +61,18 @@ void importModule()
     IMPORT_MODULE(zlib);
 
 #ifdef _WIN32
-    IMPORT_MODULE(gui);
     IMPORT_MODULE(registry);
 #endif
 
-#if defined(__APPLE__) && !defined(FIBJS_DISABLE_GUI)
+#ifndef FIBJS_DISABLE_GUI
     IMPORT_MODULE(gui);
-#endif /* __APPLE__ */
+#endif // FIBJS_DISABLE_GUI
 }
 
 void main(int32_t argc, char** argv)
 {
     importModule();
-
     start(argc, argv, FiberProcJsEntry);
-    run_gui();
 }
 }
 

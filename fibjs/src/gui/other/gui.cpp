@@ -5,12 +5,15 @@
  *      Author: lion
  */
 
-#ifndef _WIN32
-#if !defined(__APPLE__) || defined(FIBJS_DISABLE_GUI)
+#ifdef FIBJS_DISABLE_GUI
 
 #include "object.h"
 
 namespace fibjs {
+
+void init_gui()
+{
+}
 
 void run_gui()
 {
@@ -24,5 +27,5 @@ void putGuiPool(AsyncEvent* ac)
 {
 }
 }
-#endif /* __APPLE__ */
-#endif /* _WIN32 */
+
+#endif // FIBJS_DISABLE_GUI

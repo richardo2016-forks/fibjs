@@ -368,6 +368,10 @@ public:
     }
 };
 
+void init_gui()
+{
+}
+
 void run_gui()
 {
     gui_thread* _thGUI = new gui_thread();

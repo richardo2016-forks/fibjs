@@ -83,6 +83,10 @@ result_t asyncFinishedLaunchingApp(NSApplication* app)
     return 0;
 }
 
+void init_gui()
+{
+}
+
 void run_gui()
 {
     @autoreleasepool {

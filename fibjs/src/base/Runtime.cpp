@@ -39,6 +39,9 @@ void init_start_argv(int32_t argc, char** argv);
 void options(int32_t& pos, char* argv[]);
 result_t ifZipFile(exlib::string filename, bool& retVal);
 
+void init_gui();
+void run_gui();
+
 exlib::string s_root;
 
 static void createBasisForFiberLoop(v8::Platform* (*get_platform)())
@@ -161,10 +164,14 @@ void start(int32_t argc, char** argv, result_t (*jsEntryFiber)(Isolate*), v8::Pl
         v8::Platform* (*m_get_platform)();
     };
 
+    init_gui();
+
     EntryThread* entryThread = new EntryThread(argc, argv, jsEntryFiber, get_platform);
     entryThread->start();
 
     entryThread->m_sem.Wait();
+
+    run_gui();
 }
 
 static int32_t s_tls_rt;

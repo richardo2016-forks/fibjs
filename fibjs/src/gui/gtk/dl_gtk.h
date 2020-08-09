@@ -1,0 +1,217 @@
+/*
+ * dl_gtk.h
+ *
+ *  Created on: Aug 8, 2020
+ *      Author: lion
+ */
+
+#ifndef DL_GTK_H_
+#define DL_GTK_H_
+
+#include <stdint.h>
+
+namespace fibjs {
+
+typedef enum {
+    GTK_ACCEL_VISIBLE = 1 << 0,
+    GTK_ACCEL_LOCKED = 1 << 1,
+    GTK_ACCEL_MASK = 0x07
+} GtkAccelFlags;
+
+typedef enum {
+    GTK_BASELINE_POSITION_TOP,
+    GTK_BASELINE_POSITION_CENTER,
+    GTK_BASELINE_POSITION_BOTTOM
+} GtkBaselinePosition;
+
+typedef enum {
+    GTK_ORIENTATION_HORIZONTAL,
+    GTK_ORIENTATION_VERTICAL
+} GtkOrientation;
+
+typedef enum {
+    GTK_PACK_START,
+    GTK_PACK_END
+} GtkPackType;
+
+typedef enum {
+    GTK_WINDOW_TOPLEVEL,
+    GTK_WINDOW_POPUP
+} GtkWindowType;
+
+typedef enum {
+    GTK_WIN_POS_NONE,
+    GTK_WIN_POS_CENTER,
+    GTK_WIN_POS_MOUSE
+} GtkWindowPosition;
+
+typedef enum {
+    G_PARAM_READABLE = 1 << 0,
+    G_PARAM_WRITABLE = 1 << 1,
+    G_PARAM_CONSTRUCT = 1 << 2,
+    G_PARAM_CONSTRUCT_ONLY = 1 << 3,
+    G_PARAM_LAX_VALIDATION = 1 << 4,
+    G_PARAM_STATIC_NAME = 1 << 5,
+    G_PARAM_STATIC_NICK = 1 << 6,
+    G_PARAM_STATIC_BLURB = 1 << 7,
+    /* User defined flags go up to 30 */
+    G_PARAM_DEPRECATED = 1 << 31
+} GParamFlags;
+
+typedef enum {
+    G_SIGNAL_RUN_FIRST = 1 << 0,
+    G_SIGNAL_RUN_LAST = 1 << 1,
+    G_SIGNAL_RUN_CLEANUP = 1 << 2,
+    G_SIGNAL_NO_RECURSE = 1 << 3,
+    G_SIGNAL_DETAILED = 1 << 4,
+    G_SIGNAL_ACTION = 1 << 5,
+    G_SIGNAL_NO_HOOKS = 1 << 6
+} GSignalFlags;
+#define G_SIGNAL_FLAGS_MASK 0x7f
+
+typedef enum {
+    G_CONNECT_AFTER = 1 << 0,
+    G_CONNECT_SWAPPED = 1 << 1
+} GConnectFlags;
+
+typedef enum {
+    G_SIGNAL_MATCH_ID = 1 << 0,
+    G_SIGNAL_MATCH_DETAIL = 1 << 1,
+    G_SIGNAL_MATCH_CLOSURE = 1 << 2,
+    G_SIGNAL_MATCH_FUNC = 1 << 3,
+    G_SIGNAL_MATCH_DATA = 1 << 4,
+    G_SIGNAL_MATCH_UNBLOCKED = 1 << 5
+} GSignalMatchType;
+
+typedef void* gpointer;
+
+typedef char gchar;
+typedef short gshort;
+typedef long glong;
+typedef int gint;
+typedef char gboolean;
+
+typedef unsigned char guchar;
+typedef unsigned short gushort;
+typedef unsigned long gulong;
+typedef unsigned int guint;
+
+typedef float gfloat;
+typedef double gdouble;
+
+typedef int32_t gint;
+typedef uint32_t guint;
+typedef int8_t gint8;
+typedef uint8_t guint8;
+typedef uint16_t guint16;
+typedef int16_t gint16;
+typedef int32_t gint32;
+typedef uint32_t guint32;
+
+typedef unsigned int gsize;
+typedef const void* gconstpointer;
+typedef guint32 gunichar;
+typedef gulong GType;
+typedef guint32 GQuark;
+
+#define _G_TYPE_CIC(ip, gt, ct) ((ct*)g_type_check_instance_cast((GTypeInstance*)ip, gt))
+#define G_TYPE_CHECK_INSTANCE_CAST(instance, g_type, c_type) (_G_TYPE_CIC((instance), (g_type), c_type))
+
+struct GObject {
+};
+
+struct GTypeInstance {
+};
+
+struct GtkAdjustment {
+};
+
+struct GdkScreen {
+};
+
+struct GtkWidget {
+};
+
+struct GtkContainer {
+};
+#define GTK_CONTAINER(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), gtk_container_get_type(), GtkContainer))
+
+struct GtkWindow {
+};
+#define GTK_WINDOW(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), gtk_window_get_type(), GtkWindow))
+
+struct GParamSpec {
+};
+
+typedef void (*GCallback)(gpointer*);
+typedef void (*GClosureNotify)(gpointer data, gpointer closure);
+
+#define G_CALLBACK(f) (reinterpret_cast<GCallback>((f)))
+
+bool gtk_init();
+void gtk_main();
+void g_idle_add(int (*func)(void*), void* data);
+
+GTypeInstance* g_type_check_instance_cast(GTypeInstance* arg0, GType arg1);
+
+GType gtk_window_get_type();
+GType gtk_container_get_type();
+
+GtkWidget* gtk_window_new(GtkWindowType);
+void gtk_widget_show_all(GtkWidget* widget);
+void gtk_widget_destroy(GtkWidget* widget);
+
+GtkWidget* gtk_scrolled_window_new(GtkAdjustment* hadjustment, GtkAdjustment* vadjustment);
+
+void gtk_window_set_title(GtkWindow* window, const gchar* title);
+
+void gtk_widget_set_size_request(GtkWidget* widget, gint width, gint height);
+void gtk_window_set_default_size(GtkWindow* window, gint width, gint height);
+void gtk_window_resize(GtkWindow* window, gint width, gint height);
+void gtk_window_move(GtkWindow* window, gint x, gint y);
+void gtk_window_set_decorated(GtkWindow* window, gboolean setting);
+void gtk_window_set_resizable(GtkWindow* window, gboolean resizable);
+
+gulong g_signal_connect_data(gpointer object, const gchar* name, GCallback func,
+    gpointer func_data, GClosureNotify destroy_data, GConnectFlags connect_flags);
+#define g_signal_connect(instance, detailed_signal, c_handler, data) \
+    g_signal_connect_data((instance), (detailed_signal), (c_handler), (data), NULL, (GConnectFlags)0)
+#define g_signal_connect_after(instance, detailed_signal, c_handler, data) \
+    g_signal_connect_data((instance), (detailed_signal), (c_handler), (data), NULL, G_CONNECT_AFTER)
+#define g_signal_connect_swapped(instance, detailed_signal, c_handler, data) \
+    g_signal_connect_data((instance), (detailed_signal), (c_handler), (data), NULL, G_CONNECT_SWAPPED)
+
+GdkScreen* gdk_screen_get_default();
+GdkScreen* gtk_widget_get_screen(GtkWidget* widget);
+guint gdk_screen_get_height(GdkScreen* scr);
+guint gdk_screen_get_width(GdkScreen* scr);
+
+void gtk_widget_grab_focus(GtkWidget* widget);
+
+void gtk_container_add(GtkContainer* container, GtkWidget* widget);
+
+typedef enum {
+    WEBKIT_LOAD_STARTED,
+    WEBKIT_LOAD_REDIRECTED,
+    WEBKIT_LOAD_COMMITTED,
+    WEBKIT_LOAD_FINISHED
+} WebKitLoadEvent;
+
+typedef enum {
+    WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION,
+    WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION,
+    WEBKIT_POLICY_DECISION_TYPE_RESPONSE,
+} WebKitPolicyDecisionType;
+
+struct WebKitWebView {
+};
+#define WEBKIT_WEB_VIEW(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), webkit_web_view_get_type(), WebKitWebView))
+
+GType webkit_web_view_get_type(void);
+GtkWidget* webkit_web_view_new(void);
+void webkit_web_view_load_uri(GtkWidget* widget, const char* url);
+const gchar* webkit_web_view_get_title(WebKitWebView* web_view);
+
+}
+
+#endif // DL_GTK_H_
