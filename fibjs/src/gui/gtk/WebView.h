@@ -14,6 +14,8 @@
 
 namespace fibjs {
 
+#define CW_USEDEFAULT -1
+
 class WebView : public WebView_base {
     FIBER_FREE();
 
@@ -47,8 +49,14 @@ public:
     static gboolean close_WebView(GtkWidget* web_view, GtkWidget* window);
     static gboolean load_failed_WebView(GtkWidget* web_view, WebKitLoadEvent load_event,
         gchar* failing_uri, gpointer error, gpointer user_data);
+    static gboolean configure(GtkWidget* widget, GdkEventConfigure* event, gpointer user_data);
 
 protected:
+    int x = CW_USEDEFAULT;
+    int y = CW_USEDEFAULT;
+    int nWidth = CW_USEDEFAULT;
+    int nHeight = CW_USEDEFAULT;
+
     exlib::string m_url;
     obj_ptr<NObject> m_opt;
 

@@ -143,6 +143,50 @@ struct GtkWindow {
 struct GParamSpec {
 };
 
+typedef enum {
+    GDK_NOTHING = -1,
+    GDK_DELETE = 0,
+    GDK_DESTROY = 1,
+    GDK_EXPOSE = 2,
+    GDK_MOTION_NOTIFY = 3,
+    GDK_BUTTON_PRESS = 4,
+    GDK_2BUTTON_PRESS = 5,
+    GDK_3BUTTON_PRESS = 6,
+    GDK_BUTTON_RELEASE = 7,
+    GDK_KEY_PRESS = 8,
+    GDK_KEY_RELEASE = 9,
+    GDK_ENTER_NOTIFY = 10,
+    GDK_LEAVE_NOTIFY = 11,
+    GDK_FOCUS_CHANGE = 12,
+    GDK_CONFIGURE = 13,
+    GDK_MAP = 14,
+    GDK_UNMAP = 15,
+    GDK_PROPERTY_NOTIFY = 16,
+    GDK_SELECTION_CLEAR = 17,
+    GDK_SELECTION_REQUEST = 18,
+    GDK_SELECTION_NOTIFY = 19,
+    GDK_PROXIMITY_IN = 20,
+    GDK_PROXIMITY_OUT = 21,
+    GDK_DRAG_BEGIN = 22,
+    GDK_DRAG_REQUEST = 23,
+    GDK_DROP_ENTER = 24,
+    GDK_DROP_LEAVE = 25,
+    GDK_DROP_DATA_AVAIL = 26,
+    GDK_CLIENT_EVENT = 27,
+    GDK_VISIBILITY_NOTIFY = 28,
+    GDK_NO_EXPOSE = 29,
+    GDK_OTHER_EVENT = 9999 /* Deprecated, use filters instead */
+} GdkEventType;
+
+struct GdkEventConfigure {
+    GdkEventType type;
+    void* window;
+    gint8 send_event;
+    gint x, y;
+    gint width;
+    gint height;
+};
+
 typedef void (*GCallback)(gpointer*);
 typedef void (*GClosureNotify)(gpointer data, gpointer closure);
 
@@ -203,9 +247,21 @@ typedef enum {
     WEBKIT_POLICY_DECISION_TYPE_RESPONSE,
 } WebKitPolicyDecisionType;
 
+typedef enum {
+    WEBKIT_NAVRESP_ACCEPT,
+    WEBKIT_NAVRESP_IGNORE,
+    WEBKIT_NAVRESP_DOWNLOAD
+} WebKitNavigationResponse;
+
 struct WebKitWebView {
 };
 #define WEBKIT_WEB_VIEW(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), webkit_web_view_get_type(), WebKitWebView))
+
+struct WebKitWebFrame {
+};
+
+struct WebKitNetworkRequest {
+};
 
 GType webkit_web_view_get_type(void);
 GtkWidget* webkit_web_view_new(void);

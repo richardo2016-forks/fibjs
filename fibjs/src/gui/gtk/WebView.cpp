@@ -11,6 +11,7 @@
 #include "ifs/gui.h"
 #include "dl_gtk.h"
 #include "WebView.h"
+#include "EventInfo.h"
 
 namespace fibjs {
 
@@ -118,15 +119,37 @@ gboolean WebView::load_failed_WebView(GtkWidget* web_view, WebKitLoadEvent load_
     puts(failing_uri);
 }
 
-#define CW_USEDEFAULT -1
+gboolean WebView::configure(GtkWidget* widget, GdkEventConfigure* event, gpointer user_data)
+{
+    obj_ptr<WebView> web = (WebView*)user_data;
+
+    if (web->x != event->x || web->y != event->x) {
+        web->x = event->x;
+        web->y = event->y;
+
+        obj_ptr<EventInfo> ei = new EventInfo(web, "move");
+        ei->add("left", web->x);
+        ei->add("top", web->y);
+
+        web->_emit("move", ei);
+    }
+
+    if (web->nWidth != event->width || web->nHeight != event->height) {
+        web->nWidth = event->width;
+        web->nHeight = event->height;
+
+        obj_ptr<EventInfo> ei = new EventInfo(web, "resize");
+        ei->add("width", web->nWidth);
+        ei->add("height", web->nHeight);
+
+        web->_emit("resize", ei);
+    }
+
+    return false;
+}
 
 result_t WebView::open()
 {
-    int x = CW_USEDEFAULT;
-    int y = CW_USEDEFAULT;
-    int nWidth = CW_USEDEFAULT;
-    int nHeight = CW_USEDEFAULT;
-
     m_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     if (m_opt) {
@@ -180,9 +203,12 @@ result_t WebView::open()
     gtk_widget_grab_focus(m_webview);
 
     g_signal_connect(m_window, "destroy", G_CALLBACK(destroy_Window), this);
+    g_signal_connect(m_window, "configure-event", G_CALLBACK(configure), this);
+
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "close", G_CALLBACK(close_WebView), this);
     g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "notify::title", G_CALLBACK(changed_title), this);
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "load-failed", G_CALLBACK(load_failed_WebView), this);
+    // webkit_web_context_register_uri_scheme
 
     gtk_widget_show_all(m_window);
     webkit_web_view_load_uri(m_webview, m_url.c_str());
@@ -213,6 +239,7 @@ result_t WebView::close(AsyncEvent* ac)
     if (ac->isSync())
         return CHECK_ERROR(CALL_E_GUICALL);
 
+    gtk_widget_destroy(m_window);
     return 0;
 }
 
