@@ -50,6 +50,7 @@ public:
     static gboolean load_failed_WebView(GtkWidget* web_view, WebKitLoadEvent load_event,
         gchar* failing_uri, gpointer error, gpointer user_data);
     static gboolean configure(GtkWidget* widget, GdkEventConfigure* event, gpointer user_data);
+    static void console_message(WebKitWebPage* web_page, WebKitConsoleMessage* console_message, gpointer user_data);
 
 protected:
     int x = CW_USEDEFAULT;

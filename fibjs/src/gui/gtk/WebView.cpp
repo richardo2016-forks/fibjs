@@ -33,6 +33,20 @@ void putGuiPool(AsyncEvent* ac)
     g_idle_add(idle_proc, ac);
 }
 
+// __attribute__((visibility("default"))) extern "C" void webkit_web_extension_initialize(WebKitWebExtension* extension)
+// {
+//     puts("webkit_web_extension_initialize");
+//     // g_signal_connect(extension, "page-created",
+//     //     G_CALLBACK(web_page_created_callback),
+//     //     NULL);
+// }
+
+// static void initialize_web_extensions(WebKitWebContext* context, gpointer user_data)
+// {
+//     puts("initialize_web_extensions");
+//     webkit_web_context_set_web_extensions_directory(context, ".");
+// }
+
 void init_gui()
 {
     s_inited = gtk_init();
@@ -48,8 +62,13 @@ void run_gui()
 
     th.suspend();
 
-    if (s_inited)
+    if (s_inited) {
+        WebKitWebContext* ctx = webkit_web_context_get_default();
+
+        webkit_web_context_clear_cache(ctx);
+        // g_signal_connect(ctx, "initialize-web-extensions", G_CALLBACK(initialize_web_extensions), NULL);
         gtk_main();
+    }
 }
 
 result_t gui_base::setVersion(int32_t ver)
@@ -148,6 +167,10 @@ gboolean WebView::configure(GtkWidget* widget, GdkEventConfigure* event, gpointe
     return false;
 }
 
+void WebView::console_message(WebKitWebPage* web_page, WebKitConsoleMessage* console_message, gpointer user_data)
+{
+}
+
 result_t WebView::open()
 {
     m_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -203,10 +226,11 @@ result_t WebView::open()
     gtk_widget_grab_focus(m_webview);
 
     g_signal_connect(m_window, "destroy", G_CALLBACK(destroy_Window), this);
-    g_signal_connect(m_window, "configure-event", G_CALLBACK(configure), this);
+    // g_signal_connect(m_window, "configure-event", G_CALLBACK(configure), this);
 
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "close", G_CALLBACK(close_WebView), this);
-    g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "notify::title", G_CALLBACK(changed_title), this);
+    // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "notify::title", G_CALLBACK(changed_title), this);
+    // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "console-message-sent", G_CALLBACK(console_message), this);
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "load-failed", G_CALLBACK(load_failed_WebView), this);
     // webkit_web_context_register_uri_scheme
 

@@ -253,6 +253,28 @@ typedef enum {
     WEBKIT_NAVRESP_DOWNLOAD
 } WebKitNavigationResponse;
 
+typedef enum {
+    WEBKIT_CONSOLE_MESSAGE_SOURCE_JAVASCRIPT,
+    WEBKIT_CONSOLE_MESSAGE_SOURCE_NETWORK,
+    WEBKIT_CONSOLE_MESSAGE_SOURCE_CONSOLE_API,
+    WEBKIT_CONSOLE_MESSAGE_SOURCE_SECURITY,
+    WEBKIT_CONSOLE_MESSAGE_SOURCE_OTHER
+} WebKitConsoleMessageSource;
+
+typedef enum {
+    WEBKIT_CONSOLE_MESSAGE_LEVEL_INFO,
+    WEBKIT_CONSOLE_MESSAGE_LEVEL_LOG,
+    WEBKIT_CONSOLE_MESSAGE_LEVEL_WARNING,
+    WEBKIT_CONSOLE_MESSAGE_LEVEL_ERROR,
+    WEBKIT_CONSOLE_MESSAGE_LEVEL_DEBUG
+} WebKitConsoleMessageLevel;
+
+typedef enum {
+    WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER,
+    WEBKIT_CACHE_MODEL_WEB_BROWSER,
+    WEBKIT_CACHE_MODEL_DOCUMENT_BROWSER
+} WebKitCacheModel;
+
 struct WebKitWebView {
 };
 #define WEBKIT_WEB_VIEW(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), webkit_web_view_get_type(), WebKitWebView))
@@ -263,10 +285,27 @@ struct WebKitWebFrame {
 struct WebKitNetworkRequest {
 };
 
+struct WebKitWebPage {
+};
+
 GType webkit_web_view_get_type(void);
 GtkWidget* webkit_web_view_new(void);
 void webkit_web_view_load_uri(GtkWidget* widget, const char* url);
 const gchar* webkit_web_view_get_title(WebKitWebView* web_view);
+
+struct WebKitWebContext {
+};
+
+struct WebKitWebExtension {
+};
+
+WebKitWebContext* webkit_web_context_get_default();
+void webkit_web_context_set_web_extensions_directory(WebKitWebContext* context, const gchar* directory);
+void webkit_web_context_set_cache_model(WebKitWebContext* context, WebKitCacheModel cache_model);
+void webkit_web_context_clear_cache(WebKitWebContext* context);
+
+struct WebKitConsoleMessage {
+};
 
 }
 
