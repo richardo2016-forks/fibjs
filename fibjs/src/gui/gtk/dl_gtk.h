@@ -131,6 +131,7 @@ struct GdkScreen {
 
 struct GtkWidget {
 };
+#define GTK_WIDGET(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), gtk_widget_get_type(), GtkWidget))
 
 struct GtkContainer {
 };
@@ -192,7 +193,12 @@ typedef void (*GClosureNotify)(gpointer data, gpointer closure);
 
 #define G_CALLBACK(f) (reinterpret_cast<GCallback>((f)))
 
-bool gtk_init();
+#define GTK_V2 1
+#define GTK_V3 2
+#define WEBKIT_V1 4
+#define WEBKIT_V2 8
+
+gint gtk_init();
 void gtk_main();
 void g_idle_add(int (*func)(void*), void* data);
 
@@ -200,6 +206,7 @@ GTypeInstance* g_type_check_instance_cast(GTypeInstance* arg0, GType arg1);
 
 GType gtk_window_get_type();
 GType gtk_container_get_type();
+GType gtk_widget_get_type();
 
 GtkWidget* gtk_window_new(GtkWindowType);
 void gtk_widget_show_all(GtkWidget* widget);
@@ -282,16 +289,17 @@ struct WebKitWebView {
 struct WebKitWebFrame {
 };
 
+struct WebKitWebResource {
+};
+
 struct WebKitNetworkRequest {
+};
+
+struct WebKitNetworkResponse {
 };
 
 struct WebKitWebPage {
 };
-
-GType webkit_web_view_get_type(void);
-GtkWidget* webkit_web_view_new(void);
-void webkit_web_view_load_uri(GtkWidget* widget, const char* url);
-const gchar* webkit_web_view_get_title(WebKitWebView* web_view);
 
 struct WebKitWebContext {
 };
@@ -299,13 +307,18 @@ struct WebKitWebContext {
 struct WebKitWebExtension {
 };
 
+struct WebKitConsoleMessage {
+};
+
+GType webkit_web_view_get_type(void);
+GtkWidget* webkit_web_view_new(void);
+void webkit_web_view_load_uri(GtkWidget* widget, const char* url);
+const gchar* webkit_web_view_get_title(WebKitWebView* web_view);
+
 WebKitWebContext* webkit_web_context_get_default();
 void webkit_web_context_set_web_extensions_directory(WebKitWebContext* context, const gchar* directory);
 void webkit_web_context_set_cache_model(WebKitWebContext* context, WebKitCacheModel cache_model);
 void webkit_web_context_clear_cache(WebKitWebContext* context);
-
-struct WebKitConsoleMessage {
-};
 
 }
 

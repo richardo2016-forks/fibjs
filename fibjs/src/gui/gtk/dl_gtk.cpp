@@ -44,52 +44,78 @@ T dlsym(void* handle, const char* name, T& func)
     return func;
 }
 
-bool gtk_init()
+template <typename T>
+T typeof(T func)
 {
-    if (!webkit)
-        webkit = dlopen(WEBKIT2_LIB, RTLD_LAZY | RTLD_GLOBAL);
-    if (!webkit)
-        webkit = dlopen(WEBKIT_LIB, RTLD_LAZY | RTLD_GLOBAL);
-    if (!webkit)
-        return false;
+    return (T)0;
+}
 
-    if (!gtk)
-        gtk = dlopen(GTK3_LIB, RTLD_LAZY | RTLD_GLOBAL);
-    // if (!gtk)
-    //     gtk = dlopen(GTK2_LIB, RTLD_LAZY | RTLD_GLOBAL);
-    if (!gtk)
-        return false;
+gint gtk_init()
+{
+    static gint ver;
 
-    return true;
+    if (!gtk) {
+        gtk = dlopen(GTK3_LIB, RTLD_LAZY);
+        if (gtk)
+            ver |= GTK_V3;
+        else {
+            gtk = dlopen(GTK2_LIB, RTLD_LAZY);
+            if (gtk)
+                ver |= GTK_V2;
+            else
+                return 0;
+        }
+    }
+
+    if (!webkit) {
+        webkit = dlopen(WEBKIT2_LIB, RTLD_LAZY);
+        if (webkit)
+            ver |= WEBKIT_V2;
+        else {
+            webkit = dlopen(WEBKIT_LIB, RTLD_LAZY);
+            if (webkit)
+                ver |= WEBKIT_V1;
+            else
+                return 0;
+        }
+    }
+
+    return ver;
 }
 
 void gtk_main()
 {
-    static void (*s_func)();
+    static auto s_func = typeof(gtk_main);
     gtk_func();
 }
 
 void g_idle_add(int (*func)(void*), void* data)
 {
-    static void (*s_func)(int (*)(void*), void*);
+    static auto s_func = typeof(g_idle_add);
     gtk_func(func, data);
 }
 
 GTypeInstance* g_type_check_instance_cast(GTypeInstance* arg0, GType arg1)
 {
-    static GTypeInstance* (*s_func)(GTypeInstance*, GType);
+    static auto s_func = typeof(g_type_check_instance_cast);
     return gtk_func(arg0, arg1);
 }
 
 GType gtk_window_get_type()
 {
-    static GType (*s_func)();
+    static auto s_func = typeof(gtk_window_get_type);
     return gtk_func();
 }
 
 GType gtk_container_get_type()
 {
-    static GType (*s_func)();
+    static auto s_func = typeof(gtk_container_get_type);
+    return gtk_func();
+}
+
+GType gtk_widget_get_type()
+{
+    static auto s_func = typeof(gtk_widget_get_type);
     return gtk_func();
 }
 
@@ -99,161 +125,158 @@ GtkWidget* gtk_window_new(GtkWindowType t)
     if (!s_func_init)
         dlsym(gtk, "gtk_init", s_func_init)(NULL, NULL);
 
-    static GtkWidget* (*s_func)(GtkWindowType);
+    static auto s_func = typeof(gtk_window_new);
     return gtk_func(t);
 }
 
 void gtk_widget_show_all(GtkWidget* widget)
 {
-    static void (*s_func)(GtkWidget*);
+    static auto s_func = typeof(gtk_widget_show_all);
     gtk_func(widget);
 }
 
 void gtk_widget_destroy(GtkWidget* widget)
 {
-    static void (*s_func)(GtkWidget*);
+    static auto s_func = typeof(gtk_widget_destroy);
     gtk_func(widget);
 }
 
 void gtk_window_set_title(GtkWindow* window, const gchar* title)
 {
-    static void (*s_func)(GtkWindow*, const gchar*);
+    static auto s_func = typeof(gtk_window_set_title);
     gtk_func(window, title);
 }
 
 void gtk_widget_set_size_request(GtkWidget* widget, gint width, gint height)
 {
-    static void (*s_func)(GtkWidget*, gint, gint);
+    static auto s_func = typeof(gtk_widget_set_size_request);
     gtk_func(widget, width, height);
 }
 
 void gtk_window_set_default_size(GtkWindow* window, gint width, gint height)
 {
-    static void (*s_func)(GtkWindow*, gint, gint);
+    static auto s_func = typeof(gtk_window_set_default_size);
     gtk_func(window, width, height);
 }
 
 void gtk_window_resize(GtkWindow* window, gint width, gint height)
 {
-    static void (*s_func)(GtkWindow*, gint, gint);
+    static auto s_func = typeof(gtk_window_resize);
     gtk_func(window, width, height);
 }
 
 void gtk_window_move(GtkWindow* window, gint x, gint y)
 {
-    static void (*s_func)(GtkWindow*, gint, gint);
+    static auto s_func = typeof(gtk_window_move);
     gtk_func(window, x, y);
 }
 
 void gtk_window_set_decorated(GtkWindow* window, gboolean setting)
 {
-    static void (*s_func)(GtkWindow*, gboolean);
+    static auto s_func = typeof(gtk_window_set_decorated);
     gtk_func(window, setting);
 }
 
 void gtk_window_set_resizable(GtkWindow* window, gboolean resizable)
 {
-    static void (*s_func)(GtkWindow*, gboolean);
+    static auto s_func = typeof(gtk_window_set_resizable);
     gtk_func(window, resizable);
 }
 
 GtkWidget* gtk_scrolled_window_new(GtkAdjustment* hadjustment, GtkAdjustment* vadjustment)
 {
-    static GtkWidget* (*s_func)(GtkAdjustment*, GtkAdjustment*);
+    static auto s_func = typeof(gtk_scrolled_window_new);
     return gtk_func(hadjustment, vadjustment);
 }
 
 gulong g_signal_connect_data(gpointer object, const gchar* name, GCallback func,
     gpointer func_data, GClosureNotify destroy_data, GConnectFlags connect_flags)
 {
-    static gulong (*s_func)(gpointer, const gchar*,
-        GCallback, gpointer, GClosureNotify, GConnectFlags)
-        = 0;
-    return gtk_func(
-        object, name, func, func_data, destroy_data, connect_flags);
+    static auto s_func = typeof(g_signal_connect_data);
+    return gtk_func(object, name, func, func_data, destroy_data, connect_flags);
 }
 
 GdkScreen* gdk_screen_get_default()
 {
-    static GdkScreen* (*s_func)();
+    static auto s_func = typeof(gdk_screen_get_default);
     return gtk_func();
 }
 
 GdkScreen* gtk_widget_get_screen(GtkWidget* widget)
 {
-    static GdkScreen* (*s_func)(GtkWidget*);
+    static auto s_func = typeof(gtk_widget_get_screen);
     return gtk_func(widget);
 }
 
 guint gdk_screen_get_height(GdkScreen* scr)
 {
-    static guint (*s_func)(GdkScreen*);
+    static auto s_func = typeof(gdk_screen_get_height);
     return gtk_func(scr);
 }
 
 guint gdk_screen_get_width(GdkScreen* scr)
 {
-    static guint (*s_func)(GdkScreen*);
+    static auto s_func = typeof(gdk_screen_get_width);
     return gtk_func(scr);
 }
 
 void gtk_widget_grab_focus(GtkWidget* widget)
 {
-    static void (*s_func)(GtkWidget*);
+    static auto s_func = typeof(gtk_widget_grab_focus);
     gtk_func(widget);
 }
 
 void gtk_container_add(GtkContainer* container, GtkWidget* widget)
 {
-    static void (*s_func)(GtkContainer*, GtkWidget*);
+    static auto s_func = typeof(gtk_container_add);
     gtk_func(container, widget);
 }
 
 GType webkit_web_view_get_type(void)
 {
-    static GType (*s_func)();
+    static auto s_func = typeof(webkit_web_view_get_type);
     return webkit_func();
 }
 
 GtkWidget* webkit_web_view_new(void)
 {
-    static GtkWidget* (*s_func)();
+    static auto s_func = typeof(webkit_web_view_new);
     return webkit_func();
 }
 
 void webkit_web_view_load_uri(GtkWidget* widget, const char* url)
 {
-    static void (*s_func)(GtkWidget*, const char*);
+    static auto s_func = typeof(webkit_web_view_load_uri);
     webkit_func(widget, url);
 }
 
 const gchar* webkit_web_view_get_title(WebKitWebView* web_view)
 {
-    static const gchar* (*s_func)(WebKitWebView*);
+    static auto s_func = typeof(webkit_web_view_get_title);
     return webkit_func(web_view);
 }
 
 WebKitWebContext* webkit_web_context_get_default()
 {
-    static WebKitWebContext* (*s_func)();
+    static auto s_func = typeof(webkit_web_context_get_default);
     return webkit_func();
 }
 
 void webkit_web_context_set_web_extensions_directory(WebKitWebContext* context, const gchar* directory)
 {
-    static void (*s_func)(WebKitWebContext*, const gchar*);
+    static auto s_func = typeof(webkit_web_context_set_web_extensions_directory);
     webkit_func(context, directory);
 }
 
 void webkit_web_context_set_cache_model(WebKitWebContext* context, WebKitCacheModel cache_model)
 {
-    static void (*s_func)(WebKitWebContext*, WebKitCacheModel);
+    static auto s_func = typeof(webkit_web_context_set_cache_model);
     webkit_func(context, cache_model);
 }
 
 void webkit_web_context_clear_cache(WebKitWebContext* context)
 {
-    static void (*s_func)(WebKitWebContext*);
+    static auto s_func = typeof(webkit_web_context_clear_cache);
     webkit_func(context);
 }
 

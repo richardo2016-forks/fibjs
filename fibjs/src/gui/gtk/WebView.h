@@ -51,6 +51,8 @@ public:
         gchar* failing_uri, gpointer error, gpointer user_data);
     static gboolean configure(GtkWidget* widget, GdkEventConfigure* event, gpointer user_data);
     static void console_message(WebKitWebPage* web_page, WebKitConsoleMessage* console_message, gpointer user_data);
+    static void resource_request_starting(WebKitWebView* web_view, WebKitWebFrame* web_frame, WebKitWebResource* web_resource,
+        WebKitNetworkRequest* request, WebKitNetworkResponse* response, gpointer user_data);
 
 protected:
     int x = CW_USEDEFAULT;

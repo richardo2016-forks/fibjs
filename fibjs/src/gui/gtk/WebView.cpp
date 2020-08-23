@@ -17,7 +17,7 @@ namespace fibjs {
 
 DECLARE_MODULE(gui);
 
-static bool s_inited;
+static gint s_sdk;
 exlib::OSThread* pth;
 
 static int idle_proc(void* data)
@@ -33,23 +33,23 @@ void putGuiPool(AsyncEvent* ac)
     g_idle_add(idle_proc, ac);
 }
 
-// __attribute__((visibility("default"))) extern "C" void webkit_web_extension_initialize(WebKitWebExtension* extension)
-// {
-//     puts("webkit_web_extension_initialize");
-//     // g_signal_connect(extension, "page-created",
-//     //     G_CALLBACK(web_page_created_callback),
-//     //     NULL);
-// }
+__attribute__((visibility("default"))) extern "C" void webkit_web_extension_initialize(WebKitWebExtension* extension)
+{
+    puts("webkit_web_extension_initialize");
+    // g_signal_connect(extension, "page-created",
+    //     G_CALLBACK(web_page_created_callback),
+    //     NULL);
+}
 
-// static void initialize_web_extensions(WebKitWebContext* context, gpointer user_data)
-// {
-//     puts("initialize_web_extensions");
-//     webkit_web_context_set_web_extensions_directory(context, ".");
-// }
+static void initialize_web_extensions(WebKitWebContext* context, gpointer user_data)
+{
+    puts("initialize_web_extensions");
+    webkit_web_context_set_web_extensions_directory(context, ".");
+}
 
 void init_gui()
 {
-    s_inited = gtk_init();
+    s_sdk = gtk_init();
 }
 
 void run_gui()
@@ -62,11 +62,13 @@ void run_gui()
 
     th.suspend();
 
-    if (s_inited) {
-        WebKitWebContext* ctx = webkit_web_context_get_default();
-
-        webkit_web_context_clear_cache(ctx);
-        // g_signal_connect(ctx, "initialize-web-extensions", G_CALLBACK(initialize_web_extensions), NULL);
+    if (s_sdk) {
+        if (s_sdk & WEBKIT_V2) {
+            WebKitWebContext* ctx = webkit_web_context_get_default();
+            webkit_web_context_clear_cache(ctx);
+            // webkit_web_context_register_uri_scheme
+            g_signal_connect(ctx, "initialize-web-extensions", G_CALLBACK(initialize_web_extensions), NULL);
+        }
         gtk_main();
     }
 }
@@ -171,6 +173,12 @@ void WebView::console_message(WebKitWebPage* web_page, WebKitConsoleMessage* con
 {
 }
 
+void WebView::resource_request_starting(WebKitWebView* web_view, WebKitWebFrame* web_frame, WebKitWebResource* web_resource,
+    WebKitNetworkRequest* request, WebKitNetworkResponse* response, gpointer user_data)
+{
+    puts("resource_request_starting");
+}
+
 result_t WebView::open()
 {
     m_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -215,26 +223,31 @@ result_t WebView::open()
     if (y == CW_USEDEFAULT)
         y = (screen_height - nHeight) / 2;
 
-    gtk_window_move(GTK_WINDOW(m_window), x, y);
-    gtk_widget_set_size_request(m_window, nWidth, nHeight);
-
-    GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_container_add(GTK_CONTAINER(m_window), scrolled_window);
+    gtk_window_move(GTK_WINDOW(GTK_WINDOW(m_window)), x, y);
+    gtk_window_set_default_size(GTK_WINDOW(m_window), nWidth, nHeight);
 
     m_webview = webkit_web_view_new();
-    gtk_container_add(GTK_CONTAINER(scrolled_window), m_webview);
+
+    GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(m_window), GTK_WIDGET(scrolled_window));
+    gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(m_webview));
+
     gtk_widget_grab_focus(m_webview);
 
-    g_signal_connect(m_window, "destroy", G_CALLBACK(destroy_Window), this);
-    // g_signal_connect(m_window, "configure-event", G_CALLBACK(configure), this);
+    g_signal_connect(GTK_WIDGET(m_window), "destroy", G_CALLBACK(destroy_Window), this);
+    g_signal_connect(GTK_WIDGET(m_window), "configure-event", G_CALLBACK(configure), this);
+
+    g_signal_connect(GTK_WIDGET(m_webview), "notify::title", G_CALLBACK(changed_title), this);
+
+    if (s_sdk & WEBKIT_V1)
+        g_signal_connect(GTK_WIDGET(m_webview), "resource-request-starting", G_CALLBACK(resource_request_starting), this);
 
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "close", G_CALLBACK(close_WebView), this);
-    // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "notify::title", G_CALLBACK(changed_title), this);
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "console-message-sent", G_CALLBACK(console_message), this);
     // g_signal_connect(WEBKIT_WEB_VIEW(m_webview), "load-failed", G_CALLBACK(load_failed_WebView), this);
     // webkit_web_context_register_uri_scheme
 
-    gtk_widget_show_all(m_window);
+    gtk_widget_show_all(GTK_WIDGET(m_window));
     webkit_web_view_load_uri(m_webview, m_url.c_str());
 
     Ref();
