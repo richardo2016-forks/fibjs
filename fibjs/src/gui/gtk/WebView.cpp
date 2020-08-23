@@ -9,6 +9,7 @@
 
 #include "object.h"
 #include "ifs/gui.h"
+#include "ifs/fs.h"
 #include "dl_gtk.h"
 #include "WebView.h"
 #include "EventInfo.h"
@@ -19,6 +20,8 @@ DECLARE_MODULE(gui);
 
 static gint s_sdk;
 exlib::OSThread* pth;
+
+extern exlib::LockedList<Isolate> s_isolates;
 
 static int idle_proc(void* data)
 {
@@ -47,6 +50,22 @@ static void initialize_web_extensions(WebKitWebContext* context, gpointer user_d
     webkit_web_context_set_web_extensions_directory(context, ".");
 }
 
+static void scheme_callback(WebKitURISchemeRequest* request, gpointer data)
+{
+    const gchar* url = webkit_uri_scheme_request_get_uri(request);
+    if (qstrcmp(url, "fs://", 5))
+        return;
+
+    exlib::string contents;
+    result_t hr = fs_base::cc_readTextFile(url + 5, contents, s_isolates.head());
+    if (hr < 0)
+        return;
+
+    GInputStream* stream = g_memory_input_stream_new_from_data(contents.c_str(), contents.length(), NULL);
+    webkit_uri_scheme_request_finish(request, stream, contents.length(), "");
+    g_object_unref(stream);
+}
+
 void init_gui()
 {
     s_sdk = gtk_init();
@@ -66,7 +85,7 @@ void run_gui()
         if (s_sdk & WEBKIT_V2) {
             WebKitWebContext* ctx = webkit_web_context_get_default();
             webkit_web_context_clear_cache(ctx);
-            // webkit_web_context_register_uri_scheme
+            webkit_web_context_register_uri_scheme(ctx, "fs", scheme_callback, NULL, NULL);
             g_signal_connect(ctx, "initialize-web-extensions", G_CALLBACK(initialize_web_extensions), NULL);
         }
         gtk_main();

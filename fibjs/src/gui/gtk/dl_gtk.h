@@ -107,6 +107,8 @@ typedef uint16_t guint16;
 typedef int16_t gint16;
 typedef int32_t gint32;
 typedef uint32_t guint32;
+typedef int64_t gint64;
+typedef uint64_t guint64;
 
 typedef unsigned int gsize;
 typedef const void* gconstpointer;
@@ -310,6 +312,15 @@ struct WebKitWebExtension {
 struct WebKitConsoleMessage {
 };
 
+struct WebKitURISchemeRequest {
+};
+
+struct GInputStream {
+};
+
+typedef void (*WebKitURISchemeRequestCallback)(WebKitURISchemeRequest*, gpointer);
+typedef void (*GDestroyNotify)(gpointer);
+
 GType webkit_web_view_get_type(void);
 GtkWidget* webkit_web_view_new(void);
 void webkit_web_view_load_uri(GtkWidget* widget, const char* url);
@@ -319,6 +330,21 @@ WebKitWebContext* webkit_web_context_get_default();
 void webkit_web_context_set_web_extensions_directory(WebKitWebContext* context, const gchar* directory);
 void webkit_web_context_set_cache_model(WebKitWebContext* context, WebKitCacheModel cache_model);
 void webkit_web_context_clear_cache(WebKitWebContext* context);
+
+void webkit_web_context_register_uri_scheme(WebKitWebContext* context, const gchar* scheme,
+    WebKitURISchemeRequestCallback callback, gpointer user_data, GDestroyNotify user_data_destroy_func);
+
+const gchar* webkit_uri_scheme_request_get_scheme(WebKitURISchemeRequest* request);
+const gchar* webkit_uri_scheme_request_get_uri(WebKitURISchemeRequest* request);
+const gchar* webkit_uri_scheme_request_get_path(WebKitURISchemeRequest* request);
+WebKitWebView* webkit_uri_scheme_request_get_web_view(WebKitURISchemeRequest* request);
+void webkit_uri_scheme_request_finish(WebKitURISchemeRequest* request, GInputStream* stream,
+    gint64 stream_length, const gchar* content_type);
+
+typedef signed long gssize;
+
+void g_object_unref(gpointer object);
+GInputStream* g_memory_input_stream_new_from_data(const void* data, gssize len, GDestroyNotify destroy);
 
 }
 

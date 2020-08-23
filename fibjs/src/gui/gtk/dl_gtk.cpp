@@ -15,16 +15,25 @@
 
 namespace fibjs {
 
+#define GLIB2 "libglib-2.0.so.0"
+#define GIO_LIB "libgio-2.0.so.0"
+#define GOBJECT_LIB "libgobject-2.0.so.0"
 #define GTK2_LIB "libgtk-x11-2.0.so.0"
 #define GTK3_LIB "libgtk-3.so.0"
 #define WEBKIT_LIB "libwebkitgtk-3.0.so.0"
 #define WEBKIT2_LIB "libwebkit2gtk-4.0.so.37"
 
+static void* g = NULL;
+static void* gio = NULL;
+static void* gobject = NULL;
 static void* gtk = NULL;
 static void* webkit = NULL;
 
 #define webkit_func dlsym(webkit, __func__, s_func)
 #define gtk_func dlsym(gtk, __func__, s_func)
+#define g_func dlsym(g, __func__, s_func)
+#define gio_func dlsym(gio, __func__, s_func)
+#define gobject_func dlsym(gobject, __func__, s_func)
 
 template <typename T>
 T dlsym(void* handle, const char* name, T& func)
@@ -53,6 +62,24 @@ T typeof(T func)
 gint gtk_init()
 {
     static gint ver;
+
+    if (!g) {
+        g = dlopen(GLIB2, RTLD_LAZY);
+        if (!g)
+            return 0;
+    }
+
+    if (!gio) {
+        gio = dlopen(GIO_LIB, RTLD_LAZY);
+        if (!gio)
+            return 0;
+    }
+
+    if (!gobject) {
+        gobject = dlopen(GOBJECT_LIB, RTLD_LAZY);
+        if (!gobject)
+            return 0;
+    }
 
     if (!gtk) {
         gtk = dlopen(GTK3_LIB, RTLD_LAZY);
@@ -278,6 +305,56 @@ void webkit_web_context_clear_cache(WebKitWebContext* context)
 {
     static auto s_func = typeof(webkit_web_context_clear_cache);
     webkit_func(context);
+}
+
+void webkit_web_context_register_uri_scheme(WebKitWebContext* context, const gchar* scheme,
+    WebKitURISchemeRequestCallback callback, gpointer user_data, GDestroyNotify user_data_destroy_func)
+{
+    static auto s_func = typeof(webkit_web_context_register_uri_scheme);
+    webkit_func(context, scheme, callback, user_data, user_data_destroy_func);
+}
+
+const gchar* webkit_uri_scheme_request_get_scheme(WebKitURISchemeRequest* request)
+{
+    static auto s_func = typeof(webkit_uri_scheme_request_get_scheme);
+    return webkit_func(request);
+}
+
+const gchar* webkit_uri_scheme_request_get_uri(WebKitURISchemeRequest* request)
+{
+    static auto s_func = typeof(webkit_uri_scheme_request_get_uri);
+    return webkit_func(request);
+}
+
+const gchar* webkit_uri_scheme_request_get_path(WebKitURISchemeRequest* request)
+{
+    static auto s_func = typeof(webkit_uri_scheme_request_get_path);
+    return webkit_func(request);
+}
+
+WebKitWebView* webkit_uri_scheme_request_get_web_view(WebKitURISchemeRequest* request)
+{
+    static auto s_func = typeof(webkit_uri_scheme_request_get_web_view);
+    return webkit_func(request);
+}
+
+void webkit_uri_scheme_request_finish(WebKitURISchemeRequest* request, GInputStream* stream,
+    gint64 stream_length, const gchar* content_type)
+{
+    static auto s_func = typeof(webkit_uri_scheme_request_finish);
+    return webkit_func(request, stream, stream_length, content_type);
+}
+
+void g_object_unref(gpointer object)
+{
+    static auto s_func = typeof(g_object_unref);
+    gobject_func(object);
+}
+
+GInputStream* g_memory_input_stream_new_from_data(const void* data, gssize len, GDestroyNotify destroy)
+{
+    static auto s_func = typeof(g_memory_input_stream_new_from_data);
+    return gio_func(data, len, destroy);
 }
 
 }
